@@ -4,14 +4,20 @@ function eval() {
 }
 
 function expressionCalculator(expr) {
-    let input = expr.split('');
+    let input;
+    if (expr.includes(' ')){
+        input = expr.trim().split(' ');
+    } else {
+        input = expr.trim().split('');
+    }
     let valuesArr = [];
     let operationsArr = [];
     let operationsTopItem = operationsArr[operationsArr.length-1];
+    let result=[];
     for (let i=0; i<input.length; i++){
         let char = input[i];
-        if (!isNaN(char) && char !== ' ' && char !== '') {
-            valuesArr.push(char);
+        if (!isNaN(char)) {
+            valuesArr.push(+char);
         } else if (char ==='(') {
             operationsArr.push(char);
         } else if (char ===')') {
@@ -22,7 +28,7 @@ function expressionCalculator(expr) {
                     operationsTopItem.pop();
                 } 
             }
-        } else if ((char === '+' || char === '-') && char !== '' && char !== ' ' )  {
+        } else if (char === '+' || char === '-')  {
             if (operationsTopItem === '+' || operationsTopItem === '-') {
                 if (operationsArr.length >0) {
                     valuesArr.push(operationsArr.pop());
@@ -31,7 +37,7 @@ function expressionCalculator(expr) {
             } else {
                 operationsArr.push(char);
             }
-        } else if ((char === '*' || char === '/') && (char !== '' && char !== ' ')) {
+        } else if (char === '*' || char === '/') {
             if (operationsTopItem === '+' || operationsTopItem === '-') {
                 operationsArr.push(char);
             } else {
@@ -40,40 +46,50 @@ function expressionCalculator(expr) {
                 }
                 operationsArr.push(char);
             }  
-        } else if (char === '' || char === ' ' ){
-
+        } else if (char === ' '){
             continue;
-        }
-        // console.log(input,valuesArr, operationsArr);
+        } 
+
     }
+    
     while (operationsArr.length !==0){
        valuesArr.push(operationsArr.pop());
     }
-    
-    function Calc(arr){
-        let result;
-        for (let i=0; i< arr.length; i++) {
-            if (arr[i]=== '+') {
-                result = +arr[i-1] + (+arr[i-2]);
-            } else if (arr[i]=== '-') {
-                result = +arr[i-1] - (+arr[i-2]);
-            } else if (arr[i]=== '*') {
-                result = +arr[i-1] * (+arr[i-2]);
-            } else if (arr[i]=== '/') {
-                try {
-                    result = +arr[i-2] / (+arr[i-1]);
-                   if (+arr[i-1] === 0) {
-                    throw new Error("TypeError: Division by zero.");
-                   }
-                }  catch(e){
-                    console.log('divission by zero');
-                }  
-                
+
+    while (valuesArr.length >0) {
+        let temp1;
+        let temp2;
+        let subresult;
+        if (typeof(valuesArr[0])==='number'){
+            let shifted = valuesArr.shift();
+           result.push(shifted);
+        } else if (item === '+') {
+            temp1 = result.pop();
+            temp2 = result.pop();
+            subresult = temp1 + temp2;
+            result.push(subresult);
+        } else if (item === '-') {
+            temp1 = result.pop();
+            temp2 = result.pop();
+            result.push(temp1 - temp2);
+        } else if (item === '*') {
+            temp1 = result.pop();
+            temp2 = result.pop();
+            result.push(temp1 * temp2); 
+        } else if (item === '/') {
+            temp1 = result.pop();
+            temp2 = result.pop();
+            if (temp1 === 0) {
+                throw 'TypeError: Division by zero.';
             }
-        }
-        return result;
-    }
-    console.log(input,valuesArr, Calc(valuesArr));
+            result.push(temp2 / temp1);
+        } 
+        console.log(temp1, temp2); 
+        console.log(result);
+    }     
+    
+    
+// console.log(result);
   
 }
 
