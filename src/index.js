@@ -29,7 +29,7 @@ function expressionCalculator(expr) {
                 } 
             }
         } else if (char === '+' || char === '-')  {
-            if (operationsTopItem === '+' || operationsTopItem === '-') {
+            if (operationsTopItem === '+' || operationsTopItem === '-' || operationsTopItem === '*' || operationsTopItem === '/') {
                 if (operationsArr.length >0) {
                     valuesArr.push(operationsArr.pop());
                 }
@@ -49,47 +49,44 @@ function expressionCalculator(expr) {
         } else if (char === ' '){
             continue;
         } 
-
+        console.log(input, valuesArr,operationsArr);
     }
     
     while (operationsArr.length !==0){
        valuesArr.push(operationsArr.pop());
     }
-
-    while (valuesArr.length >0) {
-        let temp1;
-        let temp2;
+   
+    for (let i =0 ; i < valuesArr.length; i++) {
         let subresult;
-        if (typeof(valuesArr[0])==='number'){
-            let shifted = valuesArr.shift();
-           result.push(shifted);
-        } else if (item === '+') {
-            temp1 = result.pop();
-            temp2 = result.pop();
-            subresult = temp1 + temp2;
-            result.push(subresult);
-        } else if (item === '-') {
-            temp1 = result.pop();
-            temp2 = result.pop();
-            result.push(temp1 - temp2);
-        } else if (item === '*') {
-            temp1 = result.pop();
-            temp2 = result.pop();
-            result.push(temp1 * temp2); 
-        } else if (item === '/') {
-            temp1 = result.pop();
-            temp2 = result.pop();
-            if (temp1 === 0) {
+        if (typeof(valuesArr[i])==='number'){
+            result.push(valuesArr[i]);
+            console.log(valuesArr, result);
+        } else if (valuesArr[i] === '+' && result.length >=2 ) {
+            subresult = result.pop();
+            result[result.length-1] = result[result.length-1] + subresult;
+            console.log(valuesArr, result);
+        } else if (valuesArr[i] === '-' && result.length >=2) {
+            subresult = result.pop();
+            result[result.length-1] = result[result.length-1] - subresult;
+            console.log(valuesArr, result);
+        } else if (valuesArr[i] === '*' && result.length >=2) {
+            subresult = result.pop();
+            result[result.length-1] = result[result.length-1] * subresult;
+            console.log(valuesArr, result);
+        } else if (valuesArr[i] === '/' && result.length >=2) {
+            subresult = result.pop();
+            if (subresult === 0) {
                 throw 'TypeError: Division by zero.';
             }
-            result.push(temp2 / temp1);
+            result[result.length-1] = result[result.length-1] / subresult;
+            console.log(valuesArr, result);
         } 
-        console.log(temp1, temp2); 
-        console.log(result);
+        // console.log(temp1, temp2); 
+        // console.log(result);
     }     
     
     
-// console.log(result);
+return result[0];
   
 }
 
