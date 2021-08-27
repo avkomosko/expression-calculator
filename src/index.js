@@ -4,90 +4,109 @@ function eval() {
 }
 
 function expressionCalculator(expr) {
-    let input;
+  return calculateRPN(transformToRPN(expr));
+}
+
+function transformToRPN(expr){
+
+  const operators = ['+', '-', '/', '*'];
+  const lowPriorutyOperators = ['+', '-'];
+  const middlePriorityOperators = ['*', '/'];
+
+  function splitElements(expr) {
     if (expr.includes(' ')){
-        input = expr.trim().split(' ');
+      return expr.trim().split(' ');
     } else {
-        input = expr.trim().split('');
+      return expr.trim().split('');
     }
-    let valuesArr = [];
-    let operationsArr = [];
-    let operationsTopItem = operationsArr[operationsArr.length-1];
-    let result=[];
-    for (let i=0; i<input.length; i++){
-        let char = input[i];
-        if (!isNaN(char)) {
-            valuesArr.push(+char);
-        } else if (char ==='(') {
-            operationsArr.push(char);
-        } else if (char ===')') {
-            while(operationsArr.includes('(')){
-                if (operationsTopItem !== '(') {
-                    valuesArr.push(operationsTopItem);
-                } else {
-                    operationsTopItem.pop();
-                } 
+  }
+
+  function last(arr) {
+    return arr[arr.length - 1];
+  }
+          
+  function isPresent(arr) {
+    return arr.length > 0;
+  }
+  let valuesArr = [];
+  let operationsArr = [];
+  splitElements(expr).forEach(function(element) {
+    if (!isNaN(element)) {
+      valuesArr.push(+element);
+    } else if (element ==='(') {
+      operationsArr.push(element);
+    } else if (element ===')') {
+        while(operationsArr.includes('(')){
+          if (last(operationsArr) !== '(') {
+            valuesArr.push(last(operationsArr));
+          } else {
+            last(operationsArr).pop();
+          }
+        }
+    } else if (lowPriorutyOperators.includes(element))  {
+          if (operators.includes(last(operationsArr))) {
+            if (isPresent(operationsArr)) {
+              valuesArr.push(operationsArr.pop());
             }
-        } else if (char === '+' || char === '-')  {
-            if (operationsTopItem === '+' || operationsTopItem === '-' || operationsTopItem === '*' || operationsTopItem === '/') {
-                if (operationsArr.length >0) {
-                    valuesArr.push(operationsArr.pop());
-                }
-                operationsArr.push(char);
-            } else {
-                operationsArr.push(char);
-            }
-        } else if (char === '*' || char === '/') {
-            if (operationsTopItem === '+' || operationsTopItem === '-') {
-                operationsArr.push(char);
-            } else {
-                if (operationsArr.length >0) {
-                    valuesArr.push(operationsArr.pop());
-                }
-                operationsArr.push(char);
-            }  
-        } else if (char === ' '){
-            continue;
-        } 
-        console.log(input, valuesArr,operationsArr);
+            operationsArr.push(element);
+          } else {
+            operationsArr.push(element);
+          }
+      } else if (middlePriorityOperators.includes(element)) {
+        if (lowPriorutyOperators.includes(last(operationsArr))) {
+          operationsArr.push(element);
+        } else {
+          if (isPresent(operationsArr)) {
+            valuesArr.push(operationsArr.pop());
+          }
+          operationsArr.push(element);
+        }
+      }  
+    })
+  console.log(expr, valuesArr, operationsArr, valuesArr.concat(operationsArr.reverse()));
+  return valuesArr.concat(operationsArr.reverse()); 
+}
+
+function calculateRPN(arr) {
+  const avialableOperations = {
+    '+': sum,
+    '-': subtract,
+    '/': divide,
+    '*': multiply,
+  }
+
+  function sum(head, tail) {
+    return head + tail;
+  }
+
+  function subtract(head, tail) {
+    return head - tail;
+  }
+
+  function divide(head, tail) {
+    if (tail === 0) {
+      throw 'TypeError: Division by zero.';
     }
-    
-    while (operationsArr.length !==0){
-       valuesArr.push(operationsArr.pop());
-    }
-   
-    for (let i =0 ; i < valuesArr.length; i++) {
-        let subresult;
-        if (typeof(valuesArr[i])==='number'){
-            result.push(valuesArr[i]);
-            console.log(valuesArr, result);
-        } else if (valuesArr[i] === '+' && result.length >=2 ) {
-            subresult = result.pop();
-            result[result.length-1] = result[result.length-1] + subresult;
-            console.log(valuesArr, result);
-        } else if (valuesArr[i] === '-' && result.length >=2) {
-            subresult = result.pop();
-            result[result.length-1] = result[result.length-1] - subresult;
-            console.log(valuesArr, result);
-        } else if (valuesArr[i] === '*' && result.length >=2) {
-            subresult = result.pop();
-            result[result.length-1] = result[result.length-1] * subresult;
-            console.log(valuesArr, result);
-        } else if (valuesArr[i] === '/' && result.length >=2) {
-            subresult = result.pop();
-            if (subresult === 0) {
-                throw 'TypeError: Division by zero.';
-            }
-            result[result.length-1] = result[result.length-1] / subresult;
-            console.log(valuesArr, result);
-        } 
-        // console.log(temp1, temp2); 
-        // console.log(result);
-    }     
-    
-    
-return result[0];
+    return head / tail;
+  }
+
+  function multiply(head, tail) {
+    return head * tail;
+  }
   
+  let result = [];
+
+  arr.forEach(function(element) {
+    if (typeof(element) === 'number') {
+      result.push(element);
+    } else if (result.length >= 2) {
+      let tail = result.pop();
+      let head = result.pop();
+      result.push(avialableOperations[element](head, tail));
+    }
+  });
+
+  return result[0];  
 }
 
 module.exports = {
