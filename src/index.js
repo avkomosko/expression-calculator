@@ -13,12 +13,24 @@ function transformToRPN(expr){
   const lowPriorutyOperators = ['+', '-'];
   const middlePriorityOperators = ['*', '/'];
 
-  function splitElements(expr) {
-    if (expr.includes(' ')){
-      return expr.trim().split(' ');
-    } else {
-      return expr.trim().split('');
+  function insertSpace(str, index, substr) {
+    return str.slice(0, index) + substr + str.slice(index+1);
+  }
+  function checkSpaces(str) {
+    for (let i=0; i< str.length; i++) {
+      if (str[i] === ')' || str[i] === '(' || operators.includes(str[i])) {
+        if (str[i-1] !== ' ' && str[i+1] !== ' ' ) {
+          str = insertSpace(str, i, ` ${str[i]} `);
+        } 
+      }
     }
+    return str;
+  }
+
+
+  function splitElements(expr) {
+    let exprFix = checkSpaces(expr);
+    return exprFix.trim().split(' ');
   }
 
   function last(arr) {
@@ -28,21 +40,45 @@ function transformToRPN(expr){
   function isPresent(arr) {
     return arr.length > 0;
   }
+
+  function checkBrackets(arr) {
+    let stack =[];
+    if (arr.includes(')') && !arr.includes('(')) {
+        return false;
+    } else {
+        arr.forEach(function(item) {
+          if (item === '('){
+            stack.push(item);
+          } else if (item === ')') {
+            stack.pop();
+          }
+        })
+    }
+    return stack.length === 0;
+  }
+
   let valuesArr = [];
   let operationsArr = [];
-  splitElements(expr).forEach(function(element) {
-    if (!isNaN(element)) {
+  let input = splitElements(expr);
+   
+  input.forEach(function(element) {
+    if (!isNaN(element) && element !== '') {
       valuesArr.push(+element);
-    } else if (element ==='(') {
-      operationsArr.push(element);
-    } else if (element ===')') {
-        while(operationsArr.includes('(')){
-          if (last(operationsArr) !== '(') {
-            valuesArr.push(last(operationsArr));
-          } else {
-            last(operationsArr).pop();
-          }
+    } else if (element === '(') {
+        if (!checkBrackets(input)) {
+          throw 'ExpressionError: Brackets must be paired';
+        } else {
+          operationsArr.push(element);
         }
+    } else if (element === ')') {
+        if (!checkBrackets(input)) {
+          throw 'ExpressionError: Brackets must be paired';
+        }
+        while(last(operationsArr) !== '(') {
+          valuesArr.push(operationsArr.pop());
+        }
+          operationsArr.pop();
+        
     } else if (lowPriorutyOperators.includes(element))  {
           if (operators.includes(last(operationsArr))) {
             if (isPresent(operationsArr)) {
@@ -61,9 +97,9 @@ function transformToRPN(expr){
           }
           operationsArr.push(element);
         }
-      }  
+      }  console.log(input, valuesArr,operationsArr );
     })
-  console.log(expr, valuesArr, operationsArr, valuesArr.concat(operationsArr.reverse()));
+  console.log(valuesArr.concat(operationsArr.reverse()));
   return valuesArr.concat(operationsArr.reverse()); 
 }
 
@@ -99,11 +135,14 @@ function calculateRPN(arr) {
   arr.forEach(function(element) {
     if (typeof(element) === 'number') {
       result.push(element);
+      console.log(arr, result);
     } else if (result.length >= 2) {
       let tail = result.pop();
       let head = result.pop();
       result.push(avialableOperations[element](head, tail));
+ console.log(arr, result);
     }
+    console.log(arr, result);
   });
 
   return result[0];  
