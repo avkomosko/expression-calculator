@@ -26,7 +26,7 @@ function transformToRPN(expr){
       }
     }
 
-    return str;
+    return str.replace( /\s+/g, ' ' );
   }
 
 
@@ -62,55 +62,53 @@ function transformToRPN(expr){
   let valuesArr = [];
   let operationsArr = [];
   let input = splitElements(expr);
-   
+
   input.forEach(function(element) {
-    if (!isNaN(element) && element !== '') {
+    if (!isNaN(element) && element !== '' && element !== '(') {
       valuesArr.push(+element);
-      console.log('1', element);
     } else if (element === '(') {
         if (!checkBrackets(input)) {
           throw 'ExpressionError: Brackets must be paired';
         } else {
           if (isPresent(operationsArr)) {
-            valuesArr.push(operationsArr.pop());
+            if (lowPriorityOperators.includes(last(operationsArr))) {
+              valuesArr.push(operationsArr.pop());
+            }
             operationsArr.push(element);
           }
         }
-        console.log('2', element);
     } else if (element === ')') {
         if (!checkBrackets(input)) {
           throw 'ExpressionError: Brackets must be paired';
         }
         while(last(operationsArr) !== '(' && isPresent(operationsArr)) {
-          console.log('while', element);
+         
           valuesArr.push(operationsArr.pop());
-        }
+        } 
+  
           operationsArr.pop();
-        console.log('3', element);
     } else if (lowPriorityOperators.includes(element))  {
           if (operators.includes(last(operationsArr))) {
-            if (isPresent(operationsArr)) {
+            if (isPresent(operationsArr) && last(operationsArr) !== '(') {
               valuesArr.push(operationsArr.pop());
             }
             operationsArr.push(element);
           } else {
             operationsArr.push(element);
           }
-          console.log('4',element);
       } else if (middlePriorityOperators.includes(element)) {
         if (lowPriorityOperators.includes(last(operationsArr))) {
           operationsArr.push(element);
         } else {
-          if (isPresent(operationsArr)) {
+          if (isPresent(operationsArr) && last(operationsArr) !== '(') {
             valuesArr.push(operationsArr.pop());
           }
+            
           operationsArr.push(element);
         }
-        console.log('5', element);
       }  
-      
+      console.log(element, valuesArr, operationsArr);
     })
-console.log(valuesArr.concat(operationsArr.reverse()).join(' '));
   return valuesArr.concat(operationsArr.reverse()); 
 }
 
@@ -142,18 +140,19 @@ function calculateRPN(arr) {
   }
   
   let result = [];
-
+ 
   arr.forEach(function(element) {
+    
     if (typeof(element) === 'number') {
-      result.push(element);
-     
+      result.push(element);  
     } else if (result.length >= 2) {
       let tail = result.pop();
       let head = result.pop();
       result.push(avialableOperations[element](head, tail));
     }
+    
   });
-
+  
   return result[0];  
 }
 
