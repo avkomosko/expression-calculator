@@ -10,20 +10,22 @@ function expressionCalculator(expr) {
 function transformToRPN(expr){
 
   const operators = ['+', '-', '/', '*'];
-  const lowPriorutyOperators = ['+', '-'];
+  const lowPriorityOperators = ['+', '-'];
   const middlePriorityOperators = ['*', '/'];
 
   function insertSpace(str, index, substr) {
     return str.slice(0, index) + substr + str.slice(index+1);
   }
+
   function checkSpaces(str) {
     for (let i=0; i< str.length; i++) {
       if (str[i] === ')' || str[i] === '(' || operators.includes(str[i])) {
-        if (str[i-1] !== ' ' && str[i+1] !== ' ' ) {
+        if (str[i-1] !== ' ' || str[i+1] !== ' ' ) {
           str = insertSpace(str, i, ` ${str[i]} `);
         } 
       }
     }
+
     return str;
   }
 
@@ -64,22 +66,28 @@ function transformToRPN(expr){
   input.forEach(function(element) {
     if (!isNaN(element) && element !== '') {
       valuesArr.push(+element);
+      console.log('1', element);
     } else if (element === '(') {
         if (!checkBrackets(input)) {
           throw 'ExpressionError: Brackets must be paired';
         } else {
-          operationsArr.push(element);
+          if (isPresent(operationsArr)) {
+            valuesArr.push(operationsArr.pop());
+            operationsArr.push(element);
+          }
         }
+        console.log('2', element);
     } else if (element === ')') {
         if (!checkBrackets(input)) {
           throw 'ExpressionError: Brackets must be paired';
         }
-        while(last(operationsArr) !== '(') {
+        while(last(operationsArr) !== '(' && isPresent(operationsArr)) {
+          console.log('while', element);
           valuesArr.push(operationsArr.pop());
         }
           operationsArr.pop();
-        
-    } else if (lowPriorutyOperators.includes(element))  {
+        console.log('3', element);
+    } else if (lowPriorityOperators.includes(element))  {
           if (operators.includes(last(operationsArr))) {
             if (isPresent(operationsArr)) {
               valuesArr.push(operationsArr.pop());
@@ -88,8 +96,9 @@ function transformToRPN(expr){
           } else {
             operationsArr.push(element);
           }
+          console.log('4',element);
       } else if (middlePriorityOperators.includes(element)) {
-        if (lowPriorutyOperators.includes(last(operationsArr))) {
+        if (lowPriorityOperators.includes(last(operationsArr))) {
           operationsArr.push(element);
         } else {
           if (isPresent(operationsArr)) {
@@ -97,9 +106,11 @@ function transformToRPN(expr){
           }
           operationsArr.push(element);
         }
-      }  console.log(input, valuesArr,operationsArr );
+        console.log('5', element);
+      }  
+      
     })
-  console.log(valuesArr.concat(operationsArr.reverse()));
+console.log(valuesArr.concat(operationsArr.reverse()).join(' '));
   return valuesArr.concat(operationsArr.reverse()); 
 }
 
@@ -135,14 +146,12 @@ function calculateRPN(arr) {
   arr.forEach(function(element) {
     if (typeof(element) === 'number') {
       result.push(element);
-      console.log(arr, result);
+     
     } else if (result.length >= 2) {
       let tail = result.pop();
       let head = result.pop();
       result.push(avialableOperations[element](head, tail));
- console.log(arr, result);
     }
-    console.log(arr, result);
   });
 
   return result[0];  
